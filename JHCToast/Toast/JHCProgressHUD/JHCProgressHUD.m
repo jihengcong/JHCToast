@@ -8,14 +8,6 @@
 #import <tgmath.h>
 
 
-#ifndef kCFCoreFoundationVersionNumber_iOS_7_0
-    #define kCFCoreFoundationVersionNumber_iOS_7_0 847.20
-#endif
-
-#ifndef kCFCoreFoundationVersionNumber_iOS_8_0
-    #define kCFCoreFoundationVersionNumber_iOS_8_0 1129.15
-#endif
-
 #define MBMainThreadAssert() NSAssert([NSThread isMainThread], @"JHCProgressHUD needs to be accessed on the main thread.");
 
 CGFloat const JHCProgressMaxOffset = 1000000.f;
@@ -25,11 +17,7 @@ static const CGFloat MBDefaultLabelFontSize = 16.f;
 static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 
-@interface JHCProgressHUD () {
-    // Deprecated
-    UIColor *_activityIndicatorColor;
-    CGFloat _opacity;
-}
+@interface JHCProgressHUD ()
 
 @property (nonatomic, assign) BOOL useAnimation;
 @property (nonatomic, assign, getter=hasFinished) BOOL finished;
@@ -43,9 +31,6 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @property (nonatomic, weak) NSTimer *minShowTimer;
 @property (nonatomic, weak) NSTimer *hideDelayTimer;
 @property (nonatomic, weak) CADisplayLink *progressObjectDisplayLink;
-
-// Deprecated
-@property (assign) BOOL taskInProgress;
 
 @end
 
@@ -96,12 +81,9 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     _animationType = JHCProgressHUDAnimationFade;
     _mode = JHCProgressHUDModeIndeterminate;
     _margin = 20.0f;
-    _opacity = 1.f;
     _defaultMotionEffectsEnabled = YES;
 
-    // Default color, depending on the current iOS version
-    BOOL isLegacy = kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0;
-    _contentColor = isLegacy ? [UIColor whiteColor] : [UIColor colorWithWhite:0.f alpha:0.7f];
+    _contentColor = [UIColor colorWithWhite:0.f alpha:0.7f];
     // Transparent background
     self.opaque = NO;
     self.backgroundColor = [UIColor clearColor];
@@ -150,7 +132,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         NSTimer *timer = [NSTimer timerWithTimeInterval:self.graceTime target:self selector:@selector(handleGraceTimer:) userInfo:nil repeats:NO];
         [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
         self.graceTimer = timer;
-    } 
+    }
     // ... otherwise show the HUD immediately
     else {
         [self showUsingAnimation:self.useAnimation];
@@ -171,7 +153,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
             [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
             self.minShowTimer = timer;
             return;
-        } 
+        }
     }
     // ... otherwise hide the HUD immediately
     [self hideUsingAnimation:self.useAnimation];
@@ -225,10 +207,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     if (animated) {
         [self animateIn:YES withType:self.animationType completion:NULL];
     } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        self.bezelView.alpha = self.opacity;
-#pragma clang diagnostic pop
+        self.bezelView.alpha = 1.0f;
         self.backgroundView.alpha = 1.f;
     }
 }
@@ -273,20 +252,10 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         } else if (!animatingIn && type == JHCProgressHUDAnimationZoomOut) {
             bezelView.transform = small;
         }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        bezelView.alpha = animatingIn ? self.opacity : 0.f;
-#pragma clang diagnostic pop
+
+        bezelView.alpha = animatingIn ? 1.0f : 0.f;
         self.backgroundView.alpha = animatingIn ? 1.f : 0.f;
     };
-
-    // Spring animations are nicer, but only available on iOS 7+
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000 || TARGET_OS_TV
-    if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
-        [UIView animateWithDuration:0.3 delay:0. usingSpringWithDamping:1.f initialSpringVelocity:0.f options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
-        return;
-    }
-#endif
     [UIView animateWithDuration:0.3 delay:0. options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
 }
 
@@ -408,7 +377,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         if (mode == JHCProgressHUDModeAnnularDeterminate) {
             [(MBRoundProgressView *)indicator setAnnular:YES];
         }
-    } 
+    }
     else if (mode == JHCProgressHUDModeCustomView && self.customView != indicator) {
         // Update custom view indicator
         [indicator removeFromSuperview];
@@ -439,36 +408,15 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     self.label.textColor = color;
     self.detailsLabel.textColor = color;
     [self.button setTitleColor:color forState:UIControlStateNormal];
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if (self.activityIndicatorColor) {
-        color = self.activityIndicatorColor;
-    }
-#pragma clang diagnostic pop
-
-    // UIAppearance settings are prioritized. If they are preset the set color is ignored.
-
+    
     UIView *indicator = self.indicator;
     if ([indicator isKindOfClass:[UIActivityIndicatorView class]]) {
-        UIActivityIndicatorView *appearance = nil;
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 90000
-        appearance = [UIActivityIndicatorView appearanceWhenContainedIn:[JHCProgressHUD class], nil];
-#else
-        // For iOS 9+
-        appearance = [UIActivityIndicatorView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
-#endif
-        
+        UIActivityIndicatorView *appearance = [UIActivityIndicatorView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
         if (appearance.color == nil) {
             ((UIActivityIndicatorView *)indicator).color = color;
         }
     } else if ([indicator isKindOfClass:[MBRoundProgressView class]]) {
-        MBRoundProgressView *appearance = nil;
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 90000
-        appearance = [MBRoundProgressView appearanceWhenContainedIn:[JHCProgressHUD class], nil];
-#else
-        appearance = [MBRoundProgressView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
-#endif
+        MBRoundProgressView *appearance = [MBRoundProgressView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
         if (appearance.progressTintColor == nil) {
             ((MBRoundProgressView *)indicator).progressTintColor = color;
         }
@@ -476,12 +424,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
             ((MBRoundProgressView *)indicator).backgroundTintColor = [color colorWithAlphaComponent:0.1];
         }
     } else if ([indicator isKindOfClass:[MBBarProgressView class]]) {
-        MBBarProgressView *appearance = nil;
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 90000
-        appearance = [MBBarProgressView appearanceWhenContainedIn:[JHCProgressHUD class], nil];
-#else
-        appearance = [MBBarProgressView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
-#endif
+        MBBarProgressView *appearance = [MBBarProgressView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
         if (appearance.progressColor == nil) {
             ((MBBarProgressView *)indicator).progressColor = color;
         }
@@ -489,16 +432,13 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
             ((MBBarProgressView *)indicator).lineColor = color;
         }
     } else {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000 || TARGET_OS_TV
         if ([indicator respondsToSelector:@selector(setTintColor:)]) {
             [indicator setTintColor:color];
         }
-#endif
     }
 }
 
 - (void)updateBezelMotionEffects {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000 || TARGET_OS_TV
     MBBackgroundView *bezelView = self.bezelView;
     if (![bezelView respondsToSelector:@selector(addMotionEffect:)]) return;
 
@@ -523,7 +463,6 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
             [bezelView removeMotionEffect:effect];
         }
     }
-#endif
 }
 
 #pragma mark - Layout
@@ -884,11 +823,9 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
-    BOOL isPreiOS7 = kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0;
-
     if (_annular) {
         // Draw background
-        CGFloat lineWidth = isPreiOS7 ? 5.f : 2.f;
+        CGFloat lineWidth = 2.f;
         UIBezierPath *processBackgroundPath = [UIBezierPath bezierPath];
         processBackgroundPath.lineWidth = lineWidth;
         processBackgroundPath.lineCapStyle = kCGLineCapButt;
@@ -901,7 +838,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         [processBackgroundPath stroke];
         // Draw progress
         UIBezierPath *processPath = [UIBezierPath bezierPath];
-        processPath.lineCapStyle = isPreiOS7 ? kCGLineCapRound : kCGLineCapSquare;
+        processPath.lineCapStyle = kCGLineCapSquare;
         processPath.lineWidth = lineWidth;
         endAngle = (self.progress * 2 * (float)M_PI) + startAngle;
         [processPath addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:YES];
@@ -916,33 +853,20 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         [_progressTintColor setStroke];
         [_backgroundTintColor setFill];
         CGContextSetLineWidth(context, lineWidth);
-        if (isPreiOS7) {
-            CGContextFillEllipseInRect(context, circleRect);
-        }
         CGContextStrokeEllipseInRect(context, circleRect);
         // 90 degrees
         CGFloat startAngle = - ((float)M_PI / 2.f);
         // Draw progress
-        if (isPreiOS7) {
-            CGFloat radius = (CGRectGetWidth(self.bounds) / 2.f) - lineWidth;
-            CGFloat endAngle = (self.progress * 2.f * (float)M_PI) + startAngle;
-            [_progressTintColor setFill];
-            CGContextMoveToPoint(context, center.x, center.y);
-            CGContextAddArc(context, center.x, center.y, radius, startAngle, endAngle, 0);
-            CGContextClosePath(context);
-            CGContextFillPath(context);
-        } else {
-            UIBezierPath *processPath = [UIBezierPath bezierPath];
-            processPath.lineCapStyle = kCGLineCapButt;
-            processPath.lineWidth = lineWidth * 2.f;
-            CGFloat radius = (CGRectGetWidth(self.bounds) / 2.f) - (processPath.lineWidth / 2.f);
-            CGFloat endAngle = (self.progress * 2.f * (float)M_PI) + startAngle;
-            [processPath addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:YES];
-            // Ensure that we don't get color overlaping when _progressTintColor alpha < 1.f.
-            CGContextSetBlendMode(context, kCGBlendModeCopy);
-            [_progressTintColor set];
-            [processPath stroke];
-        }
+        UIBezierPath *processPath = [UIBezierPath bezierPath];
+        processPath.lineCapStyle = kCGLineCapButt;
+        processPath.lineWidth = lineWidth * 2.f;
+        CGFloat radius = (CGRectGetWidth(self.bounds) / 2.f) - (processPath.lineWidth / 2.f);
+        CGFloat endAngle = (self.progress * 2.f * (float)M_PI) + startAngle;
+        [processPath addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:YES];
+        // Ensure that we don't get color overlaping when _progressTintColor alpha < 1.f.
+        CGContextSetBlendMode(context, kCGBlendModeCopy);
+        [_progressTintColor set];
+        [processPath stroke];
     }
 }
 
@@ -973,8 +897,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 #pragma mark - Layout
 
 - (CGSize)intrinsicContentSize {
-    BOOL isPreiOS7 = kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0;
-    return CGSizeMake(120.f, isPreiOS7 ? 20.f : 10.f);
+    return CGSizeMake(120.f, 10.f);
 }
 
 #pragma mark - Properties
@@ -1109,18 +1032,8 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
-        if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
-            _style = JHCProgressHUDBackgroundStyleBlur;
-            if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
-                _color = [UIColor colorWithWhite:0.8f alpha:0.6f];
-            } else {
-                _color = [UIColor colorWithWhite:0.95f alpha:0.6f];
-            }
-        } else {
-            _style = JHCProgressHUDBackgroundStyleSolidColor;
-            _color = [[UIColor blackColor] colorWithAlphaComponent:0.8];
-        }
-
+        _style = JHCProgressHUDBackgroundStyleBlur;
+        _color = [UIColor colorWithWhite:0.8f alpha:0.6f];
         self.clipsToBounds = YES;
 
         [self updateForBackgroundStyle];
@@ -1138,9 +1051,6 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 #pragma mark - Appearance
 
 - (void)setStyle:(JHCProgressHUDBackgroundStyle)style {
-    if (style == JHCProgressHUDBackgroundStyleBlur && kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0) {
-        style = JHCProgressHUDBackgroundStyleSolidColor;
-    }
     if (_style != style) {
         _style = style;
         [self updateForBackgroundStyle];
@@ -1161,283 +1071,27 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 - (void)updateForBackgroundStyle {
     JHCProgressHUDBackgroundStyle style = self.style;
     if (style == JHCProgressHUDBackgroundStyleBlur) {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000 || TARGET_OS_TV
-        if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
-            UIBlurEffect *effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
-            UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:effect];
-            [self addSubview:effectView];
-            effectView.frame = self.bounds;
-            effectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-            self.backgroundColor = self.color;
-            self.layer.allowsGroupOpacity = NO;
-            self.effectView = effectView;
-        } else {
-#endif
-#if !TARGET_OS_TV
-            UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectInset(self.bounds, -100.f, -100.f)];
-            toolbar.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-            toolbar.barTintColor = self.color;
-            toolbar.translucent = YES;
-            [self addSubview:toolbar];
-            self.toolbar = toolbar;
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000 || TARGET_OS_TV
-        }
-#endif
+        UIBlurEffect *effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+        UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:effect];
+        [self addSubview:effectView];
+        effectView.frame = self.bounds;
+        effectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        self.backgroundColor = self.color;
+        self.layer.allowsGroupOpacity = NO;
+        self.effectView = effectView;
     } else {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000 || TARGET_OS_TV
-        if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
-            [self.effectView removeFromSuperview];
-            self.effectView = nil;
-        } else {
-#endif
-#if !TARGET_OS_TV
-            [self.toolbar removeFromSuperview];
-            self.toolbar = nil;
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000 || TARGET_OS_TV
-        }
-#endif
+        [self.effectView removeFromSuperview];
+        self.effectView = nil;
         self.backgroundColor = self.color;
     }
 }
 
 - (void)updateViewsForColor:(UIColor *)color {
-    if (self.style == JHCProgressHUDBackgroundStyleBlur) {
-        if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
-            self.backgroundColor = self.color;
-        } else {
-#if !TARGET_OS_TV
-            self.toolbar.barTintColor = color;
-#endif
-        }
-    } else {
-        self.backgroundColor = self.color;
-    }
+    self.backgroundColor = self.color;
 }
 
 @end
 
-
-@implementation JHCProgressHUD (Deprecated)
-
-#pragma mark - Class
-
-+ (NSUInteger)hideAllHUDsForView:(UIView *)view animated:(BOOL)animated {
-    NSArray *huds = [JHCProgressHUD allHUDsForView:view];
-    for (JHCProgressHUD *hud in huds) {
-        hud.removeFromSuperViewOnHide = YES;
-        [hud hideAnimated:animated];
-    }
-    return [huds count];
-}
-
-+ (NSArray *)allHUDsForView:(UIView *)view {
-    NSMutableArray *huds = [NSMutableArray array];
-    NSArray *subviews = view.subviews;
-    for (UIView *aView in subviews) {
-        if ([aView isKindOfClass:self]) {
-            [huds addObject:aView];
-        }
-    }
-    return [NSArray arrayWithArray:huds];
-}
-
-#pragma mark - Lifecycle
-
-- (id)initWithWindow:(UIWindow *)window {
-    return [self initWithView:window];
-}
-
-#pragma mark - Show & hide
-
-- (void)show:(BOOL)animated {
-    [self showAnimated:animated];
-}
-
-- (void)hide:(BOOL)animated {
-    [self hideAnimated:animated];
-}
-
-- (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay {
-    [self hideAnimated:animated afterDelay:delay];
-}
-
-#pragma mark - Threading
-
-- (void)showWhileExecuting:(SEL)method onTarget:(id)target withObject:(id)object animated:(BOOL)animated {
-    [self showAnimated:animated whileExecutingBlock:^{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        // Start executing the requested task
-        [target performSelector:method withObject:object];
-#pragma clang diagnostic pop
-    }];
-}
-
-- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block {
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    [self showAnimated:animated whileExecutingBlock:block onQueue:queue completionBlock:NULL];
-}
-
-- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block completionBlock:(void (^)(void))completion {
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    [self showAnimated:animated whileExecutingBlock:block onQueue:queue completionBlock:completion];
-}
-
-- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block onQueue:(dispatch_queue_t)queue {
-    [self showAnimated:animated whileExecutingBlock:block onQueue:queue completionBlock:NULL];
-}
-
-- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block onQueue:(dispatch_queue_t)queue completionBlock:(nullable JHCProgressHUDCompletionBlock)completion {
-    self.taskInProgress = YES;
-    self.completionBlock = completion;
-    dispatch_async(queue, ^(void) {
-        block();
-        dispatch_async(dispatch_get_main_queue(), ^(void) {
-            [self cleanUp];
-        });
-    });
-    [self showAnimated:animated];
-}
-
-- (void)cleanUp {
-    self.taskInProgress = NO;
-    [self hideAnimated:self.useAnimation];
-}
-
-#pragma mark - Labels
-
-- (NSString *)labelText {
-    return self.label.text;
-}
-
-- (void)setLabelText:(NSString *)labelText {
-    MBMainThreadAssert();
-    self.label.text = labelText;
-}
-
-- (UIFont *)labelFont {
-    return self.label.font;
-}
-
-- (void)setLabelFont:(UIFont *)labelFont {
-    MBMainThreadAssert();
-    self.label.font = labelFont;
-}
-
-- (UIColor *)labelColor {
-    return self.label.textColor;
-}
-
-- (void)setLabelColor:(UIColor *)labelColor {
-    MBMainThreadAssert();
-    self.label.textColor = labelColor;
-}
-
-- (NSString *)detailsLabelText {
-    return self.detailsLabel.text;
-}
-
-- (void)setDetailsLabelText:(NSString *)detailsLabelText {
-    MBMainThreadAssert();
-    self.detailsLabel.text = detailsLabelText;
-}
-
-- (UIFont *)detailsLabelFont {
-    return self.detailsLabel.font;
-}
-
-- (void)setDetailsLabelFont:(UIFont *)detailsLabelFont {
-    MBMainThreadAssert();
-    self.detailsLabel.font = detailsLabelFont;
-}
-
-- (UIColor *)detailsLabelColor {
-    return self.detailsLabel.textColor;
-}
-
-- (void)setDetailsLabelColor:(UIColor *)detailsLabelColor {
-    MBMainThreadAssert();
-    self.detailsLabel.textColor = detailsLabelColor;
-}
-
-- (CGFloat)opacity {
-    return _opacity;
-}
-
-- (void)setOpacity:(CGFloat)opacity {
-    MBMainThreadAssert();
-    _opacity = opacity;
-}
-
-- (UIColor *)color {
-    return self.bezelView.color;
-}
-
-- (void)setColor:(UIColor *)color {
-    MBMainThreadAssert();
-    self.bezelView.color = color;
-}
-
-- (CGFloat)yOffset {
-    return self.offset.y;
-}
-
-- (void)setYOffset:(CGFloat)yOffset {
-    MBMainThreadAssert();
-    self.offset = CGPointMake(self.offset.x, yOffset);
-}
-
-- (CGFloat)xOffset {
-    return self.offset.x;
-}
-
-- (void)setXOffset:(CGFloat)xOffset {
-    MBMainThreadAssert();
-    self.offset = CGPointMake(xOffset, self.offset.y);
-}
-
-- (CGFloat)cornerRadius {
-    return self.bezelView.layer.cornerRadius;
-}
-
-- (void)setCornerRadius:(CGFloat)cornerRadius {
-    MBMainThreadAssert();
-    self.bezelView.layer.cornerRadius = cornerRadius;
-}
-
-- (BOOL)dimBackground {
-    MBBackgroundView *backgroundView = self.backgroundView;
-    UIColor *dimmedColor =  [UIColor colorWithWhite:0.f alpha:.2f];
-    return backgroundView.style == JHCProgressHUDBackgroundStyleSolidColor && [backgroundView.color isEqual:dimmedColor];
-}
-
-- (void)setDimBackground:(BOOL)dimBackground {
-    MBMainThreadAssert();
-    self.backgroundView.style = JHCProgressHUDBackgroundStyleSolidColor;
-    self.backgroundView.color = dimBackground ? [UIColor colorWithWhite:0.f alpha:.2f] : [UIColor clearColor];
-}
-
-- (CGSize)size {
-    return self.bezelView.frame.size;
-}
-
-- (UIColor *)activityIndicatorColor {
-    return _activityIndicatorColor;
-}
-
-- (void)setActivityIndicatorColor:(UIColor *)activityIndicatorColor {
-    if (activityIndicatorColor != _activityIndicatorColor) {
-        _activityIndicatorColor = activityIndicatorColor;
-        UIActivityIndicatorView *indicator = (UIActivityIndicatorView *)self.indicator;
-        if ([indicator isKindOfClass:[UIActivityIndicatorView class]]) {
-            [indicator setColor:activityIndicatorColor];
-        }
-    }
-}
-
-@end
 
 @implementation JHCProgressHUDRoundedButton
 
