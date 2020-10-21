@@ -3,43 +3,32 @@
 #import <UIKit/UIKit.h>
 
 
-@class MBBackgroundView;
+@class JHCMBBackgroundView;
+
 @protocol JHCProgressHUDDelegate;
 
 
 extern CGFloat const JHCProgressMaxOffset;
 
 typedef NS_ENUM(NSInteger, JHCProgressHUDMode) {
-    /// UIActivityIndicatorView.
-    JHCProgressHUDModeIndeterminate,
-    /// A round, pie-chart like, progress view.
-    JHCProgressHUDModeDeterminate,
-    /// Horizontal progress bar.
-    JHCProgressHUDModeDeterminateHorizontalBar,
-    /// Ring-shaped progress view.
-    JHCProgressHUDModeAnnularDeterminate,
-    /// Shows a custom view.
-    JHCProgressHUDModeCustomView,
-    /// Shows only labels.
-    JHCProgressHUDModeText
+    JHCProgressHUDModeIndeterminate, // 系统菊花状, UIActivityIndicatorView
+    JHCProgressHUDModeDeterminate,   // A round, pie-chart like, progress view.
+    JHCProgressHUDModeDeterminateHorizontalBar, // Horizontal progress bar.
+    JHCProgressHUDModeAnnularDeterminate,  // Ring-shaped progress view.
+    JHCProgressHUDModeCustomView, // Shows a custom view.
+    JHCProgressHUDModeText // Shows only labels.
 };
 
 typedef NS_ENUM(NSInteger, JHCProgressHUDAnimation) {
-    /// Opacity animation
-    JHCProgressHUDAnimationFade,
-    /// Opacity + scale animation (zoom in when appearing zoom out when disappearing)
-    JHCProgressHUDAnimationZoom,
-    /// Opacity + scale animation (zoom out style)
-    JHCProgressHUDAnimationZoomOut,
-    /// Opacity + scale animation (zoom in style)
-    JHCProgressHUDAnimationZoomIn
+    JHCProgressHUDAnimationFade, // Opacity animation
+    JHCProgressHUDAnimationZoom, // Opacity + scale animation (zoom in when appearing zoom out when disappearing)
+    JHCProgressHUDAnimationZoomOut, // Opacity + scale animation (zoom out style)
+    JHCProgressHUDAnimationZoomIn // Opacity + scale animation (zoom in style)
 };
 
 typedef NS_ENUM(NSInteger, JHCProgressHUDBackgroundStyle) {
-    /// Solid color background
-    JHCProgressHUDBackgroundStyleSolidColor,
-    /// UIVisualEffectView or UIToolbar.layer background view
-    JHCProgressHUDBackgroundStyleBlur
+    JHCProgressHUDBackgroundStyleSolidColor,  // Solid color background
+    JHCProgressHUDBackgroundStyleBlur   // UIVisualEffectView or UIToolbar.layer background view
 };
 
 typedef void (^JHCProgressHUDCompletionBlock)(void);
@@ -246,12 +235,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * The view containing the labels and indicator (or customView).
  */
-@property (strong, nonatomic, readonly) MBBackgroundView *bezelView;
+@property (strong, nonatomic, readonly) JHCMBBackgroundView *bezelView;
 
 /**
  * View covering the entire HUD area, placed behind bezelView.
  */
-@property (strong, nonatomic, readonly) MBBackgroundView *backgroundView;
+@property (strong, nonatomic, readonly) JHCMBBackgroundView *backgroundView;
 
 /**
  * The UIView (e.g., a UIImageView) to be shown when the HUD is in JHCProgressHUDModeCustomView.
@@ -293,7 +282,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A progress view for showing definite progress by filling up a circle (pie chart).
  */
-@interface MBRoundProgressView : UIView
+@interface JHCMBRoundProgressView : UIView
 
 /**
  * Progress (0.0 to 1.0)
@@ -352,7 +341,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
-@interface MBBackgroundView : UIView
+@interface JHCMBBackgroundView : UIView
 
 /**
  * The background style.

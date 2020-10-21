@@ -285,7 +285,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 - (void)setupViews {
     UIColor *defaultColor = self.contentColor;
 
-    MBBackgroundView *backgroundView = [[MBBackgroundView alloc] initWithFrame:self.bounds];
+    JHCMBBackgroundView *backgroundView = [[JHCMBBackgroundView alloc] initWithFrame:self.bounds];
     backgroundView.style = JHCProgressHUDBackgroundStyleSolidColor;
     backgroundView.backgroundColor = [UIColor clearColor];
     backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -293,7 +293,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self addSubview:backgroundView];
     _backgroundView = backgroundView;
 
-    MBBackgroundView *bezelView = [MBBackgroundView new];
+    JHCMBBackgroundView *bezelView = [JHCMBBackgroundView new];
     bezelView.translatesAutoresizingMaskIntoConstraints = NO;
     bezelView.layer.cornerRadius = 5.f;
     bezelView.alpha = 0.f;
@@ -349,14 +349,18 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 - (void)updateIndicators {
     UIView *indicator = self.indicator;
     BOOL isActivityIndicator = [indicator isKindOfClass:[UIActivityIndicatorView class]];
-    BOOL isRoundIndicator = [indicator isKindOfClass:[MBRoundProgressView class]];
+    BOOL isRoundIndicator = [indicator isKindOfClass:[JHCMBRoundProgressView class]];
 
     JHCProgressHUDMode mode = self.mode;
     if (mode == JHCProgressHUDModeIndeterminate) {
         if (!isActivityIndicator) {
             // Update to indeterminate indicator
             [indicator removeFromSuperview];
-            indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+            if (@available(iOS 13.0, *)) {
+                indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+            } else {
+                indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+            }
             [(UIActivityIndicatorView *)indicator startAnimating];
             [self.bezelView addSubview:indicator];
         }
@@ -371,11 +375,11 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         if (!isRoundIndicator) {
             // Update to determinante indicator
             [indicator removeFromSuperview];
-            indicator = [[MBRoundProgressView alloc] init];
+            indicator = [[JHCMBRoundProgressView alloc] init];
             [self.bezelView addSubview:indicator];
         }
         if (mode == JHCProgressHUDModeAnnularDeterminate) {
-            [(MBRoundProgressView *)indicator setAnnular:YES];
+            [(JHCMBRoundProgressView *)indicator setAnnular:YES];
         }
     }
     else if (mode == JHCProgressHUDModeCustomView && self.customView != indicator) {
@@ -415,13 +419,13 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         if (appearance.color == nil) {
             ((UIActivityIndicatorView *)indicator).color = color;
         }
-    } else if ([indicator isKindOfClass:[MBRoundProgressView class]]) {
-        MBRoundProgressView *appearance = [MBRoundProgressView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
+    } else if ([indicator isKindOfClass:[JHCMBRoundProgressView class]]) {
+        JHCMBRoundProgressView *appearance = [JHCMBRoundProgressView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
         if (appearance.progressTintColor == nil) {
-            ((MBRoundProgressView *)indicator).progressTintColor = color;
+            ((JHCMBRoundProgressView *)indicator).progressTintColor = color;
         }
         if (appearance.backgroundTintColor == nil) {
-            ((MBRoundProgressView *)indicator).backgroundTintColor = [color colorWithAlphaComponent:0.1];
+            ((JHCMBRoundProgressView *)indicator).backgroundTintColor = [color colorWithAlphaComponent:0.1];
         }
     } else if ([indicator isKindOfClass:[MBBarProgressView class]]) {
         MBBarProgressView *appearance = [MBBarProgressView appearanceWhenContainedInInstancesOfClasses:@[[JHCProgressHUD class]]];
@@ -439,7 +443,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 - (void)updateBezelMotionEffects {
-    MBBackgroundView *bezelView = self.bezelView;
+    JHCMBBackgroundView *bezelView = self.bezelView;
     if (![bezelView respondsToSelector:@selector(addMotionEffect:)]) return;
 
     if (self.defaultMotionEffectsEnabled) {
@@ -767,7 +771,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @end
 
 
-@implementation MBRoundProgressView
+@implementation JHCMBRoundProgressView
 
 #pragma mark - Lifecycle
 
@@ -1014,7 +1018,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @end
 
 
-@interface MBBackgroundView ()
+@interface JHCMBBackgroundView ()
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000 || TARGET_OS_TV
 @property UIVisualEffectView *effectView;
@@ -1026,7 +1030,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @end
 
 
-@implementation MBBackgroundView
+@implementation JHCMBBackgroundView
 
 #pragma mark - Lifecycle
 
