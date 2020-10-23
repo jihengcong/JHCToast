@@ -6,6 +6,7 @@
 //
 
 #import "JHCViewController.h"
+#import "TestViewController.h"
 #import "JHCToastHud.h"
 
 
@@ -32,6 +33,9 @@
 - (IBAction)stopAction:(UIButton *)button
 {
     [JHCToastHud hideAnimated:YES];
+    
+    TestViewController *vc = [[TestViewController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
 }
 
 

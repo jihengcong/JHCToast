@@ -16,6 +16,8 @@
 		0442055C254037920099E861 /* JHCViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0442055A254037920099E861 /* JHCViewController.xib */; };
 		04420564254038590099E861 /* JHCToastHud.m in Sources */ = {isa = PBXBuildFile; fileRef = 0442055F254038590099E861 /* JHCToastHud.m */; };
 		04420565254038590099E861 /* JHCProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 04420562254038590099E861 /* JHCProgressHUD.m */; };
+		04B178F92542BDAA00BB0707 /* JHCPageControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 04B178F82542BDAA00BB0707 /* JHCPageControl.m */; };
+		04B178FD2542BDEC00BB0707 /* TestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04B178FC2542BDEC00BB0707 /* TestViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +36,10 @@
 		04420561254038590099E861 /* JHCProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JHCProgressHUD.h; sourceTree = "<group>"; };
 		04420562254038590099E861 /* JHCProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JHCProgressHUD.m; sourceTree = "<group>"; };
 		04420563254038590099E861 /* JHCToastHud.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JHCToastHud.h; sourceTree = "<group>"; };
+		04B178F72542BDAA00BB0707 /* JHCPageControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JHCPageControl.h; sourceTree = "<group>"; };
+		04B178F82542BDAA00BB0707 /* JHCPageControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JHCPageControl.m; sourceTree = "<group>"; };
+		04B178FB2542BDEC00BB0707 /* TestViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
+		04B178FC2542BDEC00BB0707 /* TestViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,9 +72,12 @@
 		044205372540360C0099E861 /* JHCToast */ = {
 			isa = PBXGroup;
 			children = (
+				04B178F62542BD8A00BB0707 /* PageControl */,
 				0442055E254038590099E861 /* Toast */,
 				044205382540360C0099E861 /* AppDelegate.h */,
 				044205392540360C0099E861 /* AppDelegate.m */,
+				04B178FB2542BDEC00BB0707 /* TestViewController.h */,
+				04B178FC2542BDEC00BB0707 /* TestViewController.m */,
 				04420558254037920099E861 /* JHCViewController.h */,
 				04420559254037920099E861 /* JHCViewController.m */,
 				0442055A254037920099E861 /* JHCViewController.xib */,
@@ -98,6 +107,15 @@
 				04420562254038590099E861 /* JHCProgressHUD.m */,
 			);
 			path = JHCProgressHUD;
+			sourceTree = "<group>";
+		};
+		04B178F62542BD8A00BB0707 /* PageControl */ = {
+			isa = PBXGroup;
+			children = (
+				04B178F72542BDAA00BB0707 /* JHCPageControl.h */,
+				04B178F82542BDAA00BB0707 /* JHCPageControl.m */,
+			);
+			path = PageControl;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -172,6 +190,8 @@
 			files = (
 				0442055B254037920099E861 /* JHCViewController.m in Sources */,
 				04420564254038590099E861 /* JHCToastHud.m in Sources */,
+				04B178FD2542BDEC00BB0707 /* TestViewController.m in Sources */,
+				04B178F92542BDAA00BB0707 /* JHCPageControl.m in Sources */,
 				0442053A2540360C0099E861 /* AppDelegate.m in Sources */,
 				0442054B2540360E0099E861 /* main.m in Sources */,
 				04420565254038590099E861 /* JHCProgressHUD.m in Sources */,
